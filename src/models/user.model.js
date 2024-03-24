@@ -49,11 +49,11 @@ const userSchema = new Schema(
     {timestamps:true})
 
 
-userSchema.pre("save", function (next) {
+userSchema.pre("save", async function (next) {
     if(!this.isModified('password')) {
         next()
     }
-        this.password = bcrypt.genSalt(10, function (err, salt) {
+        this.password =  await bcrypt.genSalt(10, function (err, salt) {
             bcrypt.hash("B4c0/\/", salt, function (err, hash) {
             });
         });
