@@ -1,6 +1,6 @@
 import mongoose, {Schema} from "mongoose"
 import jwt from "jsonwebtoken"
-var bcrypt = require('bcryptjs');
+import bcrypt from "bcryptjs"
 
 const userSchema = new Schema(
     {
