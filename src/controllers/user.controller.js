@@ -15,6 +15,7 @@ const registerUser = asyncHandler(async (req,res)=>{
     //check for user creation
     //return res
 
+    console.log("registerUser");
 
     const {fullname, email, password, username} = req.body;
     console.log("email", email);
