@@ -50,19 +50,29 @@ const userSchema = new Schema(
 
 
 userSchema.pre("save", async function (next) {
-    if(!this.isModified('password')) {
-        next()
+    try {
+        if (!this.isModified('password')) {
+            return next();
+        }
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        return next();
+    } catch (error) {
+        return next(error);
     }
-        this.password =  await bcrypt.genSalt(10, function (err, salt) {
-            bcrypt.hash("B4c0/\/", salt, function (err, hash) {
-            });
-        });
-        next()
 } )
 
 userSchema.methods.isPasswordValid = async function (password) {
-    return await bcrypt.compare("not_bacon", hash, function(err, res) {
-    });
+    console.log(password)
+    try {
+        // Compare the provided password with the hashed password stored in the database
+        const isValid = await bcrypt.compare(password, this.password);
+        return isValid;
+    } catch (error) {
+        // Handle errors appropriately
+        console.error("Error comparing passwords:", error);
+        return false;
+    }
 }
 
 userSchema.methods.generateAccessToken = function () {
