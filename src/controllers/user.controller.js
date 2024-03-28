@@ -129,9 +129,7 @@ const loginUser = asyncHandler(async (req,res)=>{
     //access and refresh token
     //send cookies
 
-
     const {email,username,password}=req.body
-
 
     if(!username && !email){
         throw new ApiError(400,"Username or email is required")
@@ -147,14 +145,9 @@ const loginUser = asyncHandler(async (req,res)=>{
 
     const isPasswordValid = await user.isPasswordValid(password)
 
-    // console.log(isPasswordValid)
     if(!isPasswordValid){
         throw new ApiError(400,"Invalid User Credentials")
     }
-
-    // console.log(user._id)
-
-    // console.log(await generateAccessAndRefreshToken(user._id))
 
     const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id)
 
@@ -162,16 +155,12 @@ const loginUser = asyncHandler(async (req,res)=>{
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
 
-
     console.log(loggedInUser)
-
 
     const options = {
         httpOnly:true,
         secure:true
     }
-
-
 
     return res
         .status(200)
@@ -221,11 +210,7 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
             process.env.REFRESH_TOKEN_SECRET,
         )
 
-        console.log("DECODED TOKEN ID" + decodedToken._id)
-
         const user = await User.findById(decodedToken?._id)
-
-        console.log("user from ID ",user)
 
         if(!user){
             throw new ApiError(401,"Invalid Refresh token")
@@ -240,11 +225,7 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
             secure:true
         }
 
-        console.log("User ID "+user._id)
-
         const accessToken = await generateAccessToken(user._id)
-
-        console.log(accessToken)
 
         return res
             .status(200)
