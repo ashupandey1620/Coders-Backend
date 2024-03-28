@@ -50,6 +50,7 @@ const userSchema = new Schema(
 
 
 userSchema.pre("save", async function (next) {
+
     try {
         if (!this.isModified('password')) {
             return next();
@@ -63,7 +64,9 @@ userSchema.pre("save", async function (next) {
 } )
 
 userSchema.methods.isPasswordValid = async function (password) {
+
     console.log(password)
+
     try {
         // Compare the provided password with the hashed password stored in the database
         const isValid = await bcrypt.compare(password, this.password);
@@ -76,7 +79,8 @@ userSchema.methods.isPasswordValid = async function (password) {
 }
 
 userSchema.methods.generateAccessToken = function () {
-    jwt.sign({
+
+  return  jwt.sign({
         _id: this._id,
         email: this.email,
         username:this.username,
@@ -89,13 +93,15 @@ userSchema.methods.generateAccessToken = function () {
 }
 
 userSchema.methods.generateRefreshToken = function () {
-    jwt.sign({
+
+   return  jwt.sign({
             _id: this._id,
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
             expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
         })
+
 }
 
 

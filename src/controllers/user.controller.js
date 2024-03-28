@@ -3,25 +3,31 @@ import {ApiError} from "../utils/ApiError.js";
 import {User} from "../models/user.model.js";
 import {uploadOnCloudinary} from "../utils/cloudinary.js";
 import {ApiResponse} from "../utils/ApiResponse.js";
+import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
-const generateAccessAndRefreshToken = asyncHandler(async (req, res) => {
+const generateAccessAndRefreshToken = async (userId) => {
     try{
         const user = await User.findById(userId)
-        const access = user.generateAccessToken()
-        const refresh = user.generateRefreshToken()
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
 
-        user.refreshToken = refresh
+        // console.log("Access Token from generate both",accessToken)
+        // console.log("Refresh Token from generate both",refreshToken)
+
+        user.refreshToken = refreshToken
         await user.save({validateBeforeSave:false})
 
-        return {access, refresh}
+        return {accessToken, refreshToken}
 
     }catch(error){
         throw new ApiError(500,"Something went wrong while generating Access and Refresh Token");
     }
-})
+}
 
 const registerUser = asyncHandler(async (req,res)=>{
-   //get user details from user
+
+    //get user details from user
     // validation on the data
     //check if user is already exist:username,email
     //check for images, check for avatar
@@ -31,10 +37,10 @@ const registerUser = asyncHandler(async (req,res)=>{
     //check for user creation
     //return res
 
-    console.log("registerUser");
+    // console.log("registerUser");
 
     const {fullname, email, password, username} = req.body;
-    console.log("email", email);
+    // console.log("email", email);
 
 
     if([fullname, email, password, username].some((field)=>
@@ -108,42 +114,63 @@ const loginUser = asyncHandler(async (req,res)=>{
     const {email,username,password}=req.body
 
 
-        if(!username && !email){
+    if(!username && !email){
         throw new ApiError(400,"Username or email is required")
     }
 
-    const existedUser = await User.findOne({
+    const user = await User.findOne({
         $or: [{email},{username}]
     })
 
-    if(!existedUser){
+    if(!user){
         throw new ApiError(404,"User does not exist")
     }
 
-    const isPasswordValid = await existedUser.isPasswordValid(password)
+    const isPasswordValid = await user.isPasswordValid(password)
 
-    console.log(isPasswordValid)
+    // console.log(isPasswordValid)
     if(!isPasswordValid){
         throw new ApiError(400,"Invalid User Credentials")
     }
 
+    // console.log(user._id)
+
+    // console.log(await generateAccessAndRefreshToken(user._id))
 
     const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id)
 
-    const loggedInUser = User.findById(user._id).select("-password -refreshToken")
+    console.log("checking\n\n"+accessToken+"\n\n\n",refreshToken)
+
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+
+
+    console.log(loggedInUser)
+
 
     const options = {
         httpOnly:true,
         secure:true
     }
 
-    return res.status(200).cookie("accessToken", accessToken, options)
+
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
         .json(
-            new ApiResponse(200,{
-                user : loggedInUser,accessToken, refreshToken
-            },
-                "User logged in successfully")
+            new ApiResponse(
+                200,
+                {
+                    user: loggedInUser,
+                    accessToken,
+                    refreshToken
+                },
+                "User logged in successfully"
+            )
+            // {
+            //     "testing": "Ashutosh is testing for the error in the server"
+            // }
         )
 
 })
