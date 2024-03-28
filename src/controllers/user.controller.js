@@ -168,9 +168,6 @@ const loginUser = asyncHandler(async (req,res)=>{
                 },
                 "User logged in successfully"
             )
-            // {
-            //     "testing": "Ashutosh is testing for the error in the server"
-            // }
         )
 
 })
