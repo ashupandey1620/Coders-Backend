@@ -8,7 +8,21 @@ import jwt from "jsonwebtoken";
 
 
 
+const generateAccessToken = async (userId) => {
+    try{
+        const user = await User.findById(userId)
 
+        const accessToken = user.generateAccessToken()
+
+        console.log("This is the Access TOken   ",accessToken)
+
+        return accessToken
+
+    }catch(error){
+        throw new ApiError(500,"Something went wrong while generating Access Token");
+    }
+
+}
 
 const generateAccessAndRefreshToken = async (userId) => {
     try{
@@ -27,6 +41,7 @@ const generateAccessAndRefreshToken = async (userId) => {
     }catch(error){
         throw new ApiError(500,"Something went wrong while generating Access and Refresh Token");
     }
+
 }
 
 const registerUser = asyncHandler(async (req,res)=>{
@@ -206,9 +221,11 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
             process.env.REFRESH_TOKEN_SECRET,
         )
 
-        console.log("DECODED TOKEN " + decodedToken)
+        console.log("DECODED TOKEN ID" + decodedToken._id)
 
         const user = await User.findById(decodedToken?._id)
+
+        console.log("user from ID ",user)
 
         if(!user){
             throw new ApiError(401,"Invalid Refresh token")
@@ -223,18 +240,19 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
             secure:true
         }
 
-        const {newAccessToken, newRefreshToken} = await generateAccessAndRefreshToken(user._id)
+        console.log("User ID "+user._id)
 
-        console.log(newAccessToken, newRefreshToken)
+        const accessToken = await generateAccessToken(user._id)
+
+        console.log(accessToken)
 
         return res
             .status(200)
-            .cookie("accessToken", newAccessToken, options)
-            .cookie("refreshToken", newRefreshToken, options)
+            .cookie("accessToken", accessToken, options)
             .json(
                 new ApiResponse(
                     200,
-                    {newAccessToken, newRefreshToken},
+                    {accessToken},
                     "Access token refreshed"
                 )
             )
