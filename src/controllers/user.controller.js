@@ -4,8 +4,10 @@ import {User} from "../models/user.model.js";
 import {uploadOnCloudinary} from "../utils/cloudinary.js";
 import {ApiResponse} from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
-import process from "mongoose-aggregate-paginate-v2/.eslintrc.js";
+
+
+
+
 
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -191,11 +193,14 @@ const logoutUser = asyncHandler(async (req,res)=>{
 const refreshAccessToken = asyncHandler(async (req,res)=>{
     const refreshTokenAya = req.cookies?.refreshToken || req.header("Authorization")?.replace("Bearer ", "");
 
-    if(!refreshToken){
+    if(!refreshTokenAya){
         throw new ApiError(401,"Refresh token is required")
     }
 
     try{
+
+        console.log("Refresh token secret ", process.env.REFRESH_TOKEN_SECRET)
+
         const decodedToken = jwt.verify(
             refreshTokenAya,
             process.env.REFRESH_TOKEN_SECRET,
@@ -218,22 +223,24 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
             secure:true
         }
 
-        const {accessToken, newRefreshToken} = await generateAccessAndRefreshToken(user._id)
+        const {newAccessToken, newRefreshToken} = await generateAccessAndRefreshToken(user._id)
+
+        console.log(newAccessToken, newRefreshToken)
 
         return res
             .status(200)
-            .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", refreshTokenAya, options)
+            .cookie("accessToken", newAccessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
             .json(
                 new ApiResponse(
                     200,
-                    {accessToken, refreshToken: refreshTokenAya},
+                    {newAccessToken, newRefreshToken},
                     "Access token refreshed"
                 )
             )
 
     }catch(error) {
-        throw new ApiError(400,"Invalid refresh token")
+        throw new ApiError(400,error)
     }
 })
 
