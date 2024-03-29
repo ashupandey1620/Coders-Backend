@@ -45,5 +45,8 @@ router.route("/getProfile").post(verifyJWT, getProfile)
 
 router.route("/updateAccount").post(verifyJWT, updateAccountDetails)
 
+router.route("/changeAvatar").patch(verifyJWT, upload.single("avatar"),updateUserAvatar)
+
+router.route("/changeCoverImage").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage)
 
 export default router;
