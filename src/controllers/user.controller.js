@@ -462,7 +462,7 @@ const addTask = asyncHandler(async (req,res)=>{
     const createdTask = await Task.findById(task._id)
 
     if(!createdTask){
-        // console.log(createdUser)
+        // console.log(createdTask)
         throw new ApiError(500,"Something went wrong while adding the Task")
     }
 
@@ -477,7 +477,7 @@ const updateTask = asyncHandler(async (req,res)=>{
 
     console.log(req.body)
 
-    const {taskName, description, startTime, endTime} = req.body;
+    const {taskName, description, startTime, endTime, taskId} = req.body;
 
     console.log(taskName+" "+description+" "+startTime+" "+endTime);
 
@@ -486,13 +486,12 @@ const updateTask = asyncHandler(async (req,res)=>{
         throw new ApiError(400,"Fields are required to update the task")
     }
 
-    // const tasker = await Task.findById(req.user?._id)
-
+    const user = await User.findById(req.user?._id)
 
     console.log(req.user?._id+" Hello ")
 
 
-    const task = await Task.findByIdAndUpdate(req.user?._id,
+    const task = await Task.findByIdAndUpdate(taskId,
         {
             $set:{
                 taskName: taskName,
@@ -514,13 +513,9 @@ const updateTask = asyncHandler(async (req,res)=>{
     }
 
     return res.status(201).json(
-        new ApiResponse(200,updateTask,"Task Added Successfully")
+        new ApiResponse(200,updatedTask,"Task Added Successfully")
     )
 })
-
-
-
-
 
 export {
     loginUser,
