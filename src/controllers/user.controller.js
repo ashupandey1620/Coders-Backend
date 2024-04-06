@@ -145,7 +145,6 @@ const loginUser = asyncHandler(async (req,res)=>{
     }
 
     const isPasswordValid = await user.isPasswordValid(password)
-
     if(!isPasswordValid){
         throw new ApiError(400,"Invalid User Credentials")
     }
@@ -471,8 +470,6 @@ const addTask = asyncHandler(async (req,res)=>{
     )
 })
 
-
-
 const updateTask = asyncHandler(async (req,res)=>{
 
     console.log(req.body)
@@ -488,8 +485,11 @@ const updateTask = asyncHandler(async (req,res)=>{
 
     const user = await User.findById(req.user?._id)
 
-    console.log(req.user?._id+" Hello ")
+    console.log(req.user?._id)
 
+    const earlyTask = await Task.findById(taskId)
+
+    console.log("Early Task"+ earlyTask)
 
     const task = await Task.findByIdAndUpdate(taskId,
         {
@@ -517,6 +517,59 @@ const updateTask = asyncHandler(async (req,res)=>{
     )
 })
 
+
+const deleteTask = asyncHandler(async (req,res)=>{
+
+    console.log(req.body)
+
+    const {taskId} = req.body;
+
+    console.log(taskId);
+
+    if(!taskId){
+        throw new ApiError(400,"Task Id is missing")
+    }
+    const task = await Task.findById(taskId)
+
+    const deletedTask = await Task.deleteOne(task)
+
+    const taskDeleted = await Task.findById(taskId)
+
+    if(taskDeleted){
+        throw new ApiError(500,"Something went wrong while deleting the Task")
+    }
+
+    return res.status(201).json(
+        new ApiResponse(200,taskDeleted,"Task Deleted Successfully")
+    )
+})
+
+const deleteAllTask = asyncHandler(async (req,res)=>{
+
+    console.log(req.body)
+
+    const {taskId} = req.body;
+
+    console.log(taskId);
+
+    if(!taskId){
+        throw new ApiError(400,"Task Id is missing")
+    }
+    const task = await Task.findById(taskId)
+
+    const deletedTask = await Task.deleteMany({ _id: { $in: taskId } })
+
+    const taskDeleted = await Task.findById(taskId)
+
+    if(taskDeleted){
+        throw new ApiError(500,"Something went wrong while deleting the Task")
+    }
+
+    return res.status(201).json(
+        new ApiResponse(200,taskDeleted,"All Selected Task Deleted")
+    )
+})
+
 export {
     loginUser,
     registerUser,
@@ -529,5 +582,7 @@ export {
     updateUserCoverImage,
     getUserChannelProfile,
     addTask,
-    updateTask
+    updateTask,
+    deleteTask,
+    deleteAllTask
 };
