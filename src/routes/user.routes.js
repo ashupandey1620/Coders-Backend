@@ -8,7 +8,9 @@ import {
     getProfile,
     updateAccountDetails,
     updateUserAvatar,
-    updateUserCoverImage
+    updateUserCoverImage,
+    addTask,
+    updateTask
 } from "../controllers/user.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import {verifyJWT} from "../middlewares/auth.middleware.js";
@@ -48,5 +50,9 @@ router.route("/updateAccount").post(verifyJWT, updateAccountDetails)
 router.route("/changeAvatar").patch(verifyJWT, upload.single("avatar"),updateUserAvatar)
 
 router.route("/changeCoverImage").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage)
+
+router.route("/addTask").post(verifyJWT,addTask);
+
+router.route("/updateTask").post(verifyJWT,updateTask);
 
 export default router;

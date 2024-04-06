@@ -4,6 +4,7 @@ import {User} from "../models/user.model.js";
 import {uploadOnCloudinary} from "../utils/cloudinary.js";
 import {ApiResponse} from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
+import {Task} from "../models/task.model.js";
 
 
 
@@ -129,7 +130,7 @@ const loginUser = asyncHandler(async (req,res)=>{
     //access and refresh token
     //send cookies
 
-    const {email,username,password}=req.body
+    const {email,username,password} = req.body
 
     if(!username && !email){
         throw new ApiError(400,"Username or email is required")
@@ -355,7 +356,6 @@ const updateUserCoverImage = asyncHandler(async (req,res)=>{
     )
 })
 
-
 const getUserChannelProfile = asyncHandler(async (req,res)=>{
 
     const {userName} = req.params
@@ -429,6 +429,99 @@ const getUserChannelProfile = asyncHandler(async (req,res)=>{
     )
 })
 
+
+const addTask = asyncHandler(async (req,res)=>{
+
+    console.log(req.body)
+
+    const {taskName, description, startTime, endTime} = req.body;
+
+    console.log(taskName+" "+description+" "+startTime+" "+endTime);
+
+    if([taskName, description, startTime, endTime].some((field)=>
+        field?.trim() === "")){
+        throw new ApiError(400,"All fields are required")
+    }
+
+
+    const userName = await User.findById(req.user?._id)
+
+
+    const task = await Task.create({
+            taskName : taskName,
+            description : description,
+            startTime: startTime,
+            endTime: endTime,
+            success: true,
+            userName:userName
+        }
+    )
+
+    console.log(task)
+
+    const createdTask = await Task.findById(task._id)
+
+    if(!createdTask){
+        // console.log(createdUser)
+        throw new ApiError(500,"Something went wrong while adding the Task")
+    }
+
+    return res.status(201).json(
+        new ApiResponse(200,createdTask,"Task Added Successfully")
+    )
+})
+
+
+
+const updateTask = asyncHandler(async (req,res)=>{
+
+    console.log(req.body)
+
+    const {taskName, description, startTime, endTime} = req.body;
+
+    console.log(taskName+" "+description+" "+startTime+" "+endTime);
+
+    if([taskName, description, startTime, endTime].some((field)=>
+        field?.trim() === "")){
+        throw new ApiError(400,"Fields are required to update the task")
+    }
+
+    // const tasker = await Task.findById(req.user?._id)
+
+
+    console.log(req.user?._id+" Hello ")
+
+
+    const task = await Task.findByIdAndUpdate(req.user?._id,
+        {
+            $set:{
+                taskName: taskName,
+                description: description,
+                startTime: startTime,
+                endTime: endTime
+            }
+        },
+        {new: true}
+    )
+
+    console.log(task)
+
+    const updatedTask = await Task.findById(task._id)
+
+    if(!updatedTask){
+        // console.log(createdUser)
+        throw new ApiError(500,"Something went wrong while Updating the Task")
+    }
+
+    return res.status(201).json(
+        new ApiResponse(200,updateTask,"Task Added Successfully")
+    )
+})
+
+
+
+
+
 export {
     loginUser,
     registerUser,
@@ -439,5 +532,7 @@ export {
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,
-    getUserChannelProfile
+    getUserChannelProfile,
+    addTask,
+    updateTask
 };

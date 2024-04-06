@@ -43,6 +43,10 @@ const userSchema = new Schema(
         },
         refreshToken:{
             type:String,
+        },
+        task:{
+            type:Schema.Types.ObjectId,
+            ref:"Task"
         }
 
     },
