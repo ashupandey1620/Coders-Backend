@@ -408,7 +408,7 @@ const getUserChannelProfile = asyncHandler(async (req,res)=>{
             {
                 $project:{
                     fullname:1,
-                    isername:1,
+                    username:1,
                     subscribersCount:1,
                     channelSubscribedTo:1,
                     isSubscribed:1,
